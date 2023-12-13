@@ -78,13 +78,13 @@ const mainMenu = async () => {
 
   switch (response.action) {
     case 'View all Departments':
-      viewAllDepartments();
+      await viewAllDepartments();
       break;
     case 'View all Employees':
-      viewAllEmployees();
+      await viewAllEmployees();
       break;
     case 'View all Roles':
-      viewAllRoles();
+      await viewAllRoles();
       break;
     case 'Add a Department':
       await addDepartment();
@@ -99,39 +99,39 @@ const mainMenu = async () => {
       await updateEmployeeRole();
       break;
   }
+
+  mainMenu();
 };
 
-mainMenu();
 const viewAllDepartments = async () => {
   const [departments] = await db.promise().query('SELECT * FROM department;');
   console.table(departments);
-  mainMenu();
-}
+};
+
 const viewAllEmployees = async () => {
   const [employees] = await db.promise().query('SELECT * FROM employee;');
   console.table(employees);
-  mainMenu();
-}
+};
+
 const viewAllRoles = async () => {
   const [roles] = await db.promise().query('SELECT * FROM role;');
-
   console.table(roles);
-  mainMenu();
-}
-const addDepartment=async()=>{
+};
 
-  const{departmentName}=await prompt([
-    { 
-    type: 'input',
-    name: 'departmentName',
-    message: 'Enter the name of the department'
-
-  
+const addDepartment = async () => {
+  const { departmentName } = await prompt([
+    {
+      type: 'input',
+      name: 'departmentName',
+      message: 'Enter the name of the department'
     },
   ]);
-  await db.promise().query('INSERT INTO department (name)VALUES(?)',[departmentName])
+
+  await db.promise().query('INSERT INTO department (name) VALUES (?)', [departmentName]);
   console.log(`Department added successfully!`);
 };
+
+mainMenu();
 
 const addRole = async () => {
   // Fetch the department ids from the database
@@ -167,7 +167,17 @@ const addRole = async () => {
 const addEmployee = async () => {
   const [roles] = await db.promise().query('SELECT id FROM role WHERE id IS NOT NULL;');
   const [managers] = await db.promise().query('SELECT manager_id FROM employee WHERE manager_id IS NOT NULL;');
-  
+
+  const roleChoices = [
+    { name: 'None', value: null },
+    ...roles.map((role) => ({ name: role.id, value: role.id }))
+  ];
+
+  const managerChoices = [
+    { name: 'None', value: null },
+    ...managers.map((manager) => ({ name: manager.manager_id, value: manager.manager_id }))
+  ];
+
   const employee = await prompt([
     {
       type: 'input',
@@ -183,15 +193,16 @@ const addEmployee = async () => {
       type: 'list',
       name: 'role_id',
       message: 'Select role id',
-      choices: roles.map((role) => role.id)
+      choices: roleChoices
     },
     {
       type: 'list',
       name: 'manager_id',
       message: 'Select manager id',
-      choices: managers.map((manager) => manager.manager_id)
+      choices: managerChoices
     }
   ]);
+
 
   const { first_name, last_name, role_id, manager_id } = employee;
 
