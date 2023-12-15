@@ -120,6 +120,7 @@ const viewAllRoles = async () => {
 
 const addDepartment = async () => {
   const { departmentName } = await prompt([
+  
     {
       type: 'input',
       name: 'departmentName',
